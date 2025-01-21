@@ -1,4 +1,4 @@
-export async function GET(request) {
+export async function GET() {
   const team = [
     { id: 1, name: 'Aman Sharma', role: 'Frontend Developer', bio: 'Specializes in React and Next.js.' },
     { id: 2, name: 'Rahul Verma', role: 'Backend Developer', bio: 'Expert in Node.js and MongoDB.' },
@@ -10,4 +10,3 @@ export async function GET(request) {
     headers: { 'Content-Type': 'application/json' },
   });
 }
-

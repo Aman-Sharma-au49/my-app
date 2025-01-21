@@ -9,7 +9,7 @@ const HomePage: React.FC = () => {
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [selectedRole, setSelectedRole] = useState<string>('All');
+  const [selectedRole] = useState<string>('All');
 
   useEffect(() => {
     const fetchTeamData = async () => {
