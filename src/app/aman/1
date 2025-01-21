@@ -1,0 +1,203 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+
+export default function AmanPage() {
+  const [team, setTeam] = useState([]);
+  const [searchText, setSearchText] = useState('');
+  const [filteredTeam, setFilteredTeam] = useState([]);
+  const [editMode, setEditMode] = useState(null); // Track which member is being edited
+  const [editData, setEditData] = useState({ name: '', role: '', bio: '' });
+
+  // Fetch team members from API
+  useEffect(() => {
+    const fetchTeam = async () => {
+      try {
+        const response = await fetch('/api/team');
+        const data = await response.json();
+        setTeam(data);
+        setFilteredTeam(data);
+      } catch (error) {
+        console.error('Error fetching team members:', error);
+      }
+    };
+
+    fetchTeam();
+  }, []);
+
+  // Handle search input changes
+  const handleSearch = (event) => {
+    const text = event.target.value.toLowerCase();
+    setSearchText(text);
+
+    const filtered = team.filter(
+      (member) =>
+        member.name.toLowerCase().includes(text) ||
+        member.role.toLowerCase().includes(text)
+    );
+    setFilteredTeam(filtered);
+  };
+
+  // Handle delete
+  const handleDelete = (id) => {
+    const updatedTeam = team.filter((member) => member.id !== id);
+    setTeam(updatedTeam);
+    setFilteredTeam(updatedTeam);
+  };
+
+  // Handle edit mode activation
+  const handleEdit = (id) => {
+    const memberToEdit = team.find((member) => member.id === id);
+    setEditMode(id);
+    setEditData({ ...memberToEdit });
+  };
+
+  // Handle edit data changes
+  const handleEditChange = (e) => {
+    const { name, value } = e.target;
+    setEditData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Handle save after editing
+  const handleSave = (id) => {
+    const updatedTeam = team.map((member) =>
+      member.id === id ? { ...member, ...editData } : member
+    );
+    setTeam(updatedTeam);
+    setFilteredTeam(updatedTeam);
+    setEditMode(null); // Exit edit mode
+  };
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>Team Members</h1>
+      {/* Search Bar */}
+      <div style={{ marginBottom: '20px' }}>
+        <input
+          type="text"
+          placeholder="Search by name or role..."
+          value={searchText}
+          onChange={handleSearch}
+          style={{
+            padding: '10px',
+            fontSize: '16px',
+            width: '300px',
+            border: '1px solid #ccc',
+            borderRadius: '4px',
+          }}
+        />
+      </div>
+
+      {/* Team Members List */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+        {filteredTeam.map((member) => (
+          <div
+            key={member.id}
+            style={{
+              border: '1px solid #ccc',
+              borderRadius: '8px',
+              padding: '15px',
+              backgroundColor: '#f9f9f9',
+              position: 'relative',
+            }}
+          >
+            {editMode === member.id ? (
+              // Edit Mode Form
+              <div>
+                <input
+                  type="text"
+                  name="name"
+                  value={editData.name}
+                  onChange={handleEditChange}
+                  placeholder="Name"
+                  style={{ marginBottom: '10px', width: '100%' }}
+                />
+                <input
+                  type="text"
+                  name="role"
+                  value={editData.role}
+                  onChange={handleEditChange}
+                  placeholder="Role"
+                  style={{ marginBottom: '10px', width: '100%' }}
+                />
+                <textarea
+                  name="bio"
+                  value={editData.bio}
+                  onChange={handleEditChange}
+                  placeholder="Bio"
+                  style={{ marginBottom: '10px', width: '100%' }}
+                />
+                <button
+                  onClick={() => handleSave(member.id)}
+                  style={{
+                    backgroundColor: '#4CAF50',
+                    color: 'white',
+                    padding: '10px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginRight: '10px',
+                  }}
+                >
+                  Save
+                </button>
+                <button
+                  onClick={() => setEditMode(null)}
+                  style={{
+                    backgroundColor: '#FF9800',
+                    color: 'white',
+                    padding: '10px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              // View Mode
+              <>
+                <h2>{member.name}</h2>
+                <p>
+                  <strong>Role:</strong> {member.role}
+                </p>
+                <p>{member.bio}</p>
+                <button
+                  onClick={() => handleEdit(member.id)}
+                  style={{
+                    backgroundColor: '#2196F3',
+                    color: 'white',
+                    padding: '10px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    marginRight: '10px',
+                  }}
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={() => handleDelete(member.id)}
+                  style={{
+                    backgroundColor: '#F44336',
+                    color: 'white',
+                    padding: '10px',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Delete
+                </button>
+              </>
+            )}
+          </div>
+        ))}
+      </div>
+
+      {filteredTeam.length === 0 && <p>No team members found!</p>}
+    </div>
+  );
+}
+
